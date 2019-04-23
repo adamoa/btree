@@ -26,6 +26,7 @@ private:
   void rotateRight();
   void rotateLeft();
   void remove(BTree * node);
+  void printElements();
 
 public:
   BTree();

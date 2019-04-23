@@ -14,9 +14,7 @@ int main () {
   root->remove(135);
   root->remove(886);
 
-  cout << "digraph {\ngraph [ ordering = out ]\nnode [ shape = circle ]\n";
   root->print();
-  cout << "}\n";
 
   return 0;
 }

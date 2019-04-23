@@ -305,9 +305,9 @@ int BTree::getValue() {
   return d_value;
 }
 
-void BTree::print() {
+void BTree::printElements() {
   if (p_parent==0 && p_right!=0) {
-    p_right->print();
+    p_right->printElements();
   } else {
 
     cout << d_value << " [ label = <<B>" << d_value << "</B><BR/>" << d_factor << ">]\n";
@@ -328,11 +328,17 @@ void BTree::print() {
     }
 
     if (p_left!=0) {
-      p_left->print();
+      p_left->printElements();
     }
     if (p_right!=0) {
-      p_right->print();
+      p_right->printElements();
     }
 
   }
+}
+
+void BTree::print() {
+  cout << "digraph {\ngraph [ ordering = out ]\nnode [ shape = circle ]\n";
+  this->printElements();
+  cout << "}\n";
 }
