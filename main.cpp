@@ -1,20 +1,23 @@
 
 #include <iostream>
+#include <fstream>
 #include <stdlib.h>
 #include "btree.h"
 using namespace std;
 
 int main () {
-  BTree *root = new BTree();
-  for (int i=0; i<50; i++)
-    root->insert(rand()%1000);
+  fstream file("test.out", ios_base::in | ios_base::out | ios_base::trunc);
+  file.close();
 
-  root->remove(123);
-  root->remove(69);
-  root->remove(135);
-  root->remove(886);
+  BTree *root = new BTree("test.out");
+  for (int i=0; i<50; i++) {
+    int value=rand()%1000;
+    root->insert(value);
+  }
 
   root->print();
+
+  root->storeTree();
 
   return 0;
 }

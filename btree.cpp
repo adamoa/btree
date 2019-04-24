@@ -3,12 +3,24 @@
 
 using namespace std;
 
-BTree::BTree() {
-  d_value=0;
-  d_factor=0;
+BTree::BTree(const char * file) {
   p_parent=0;
-  p_left=0;
-  p_right=0;
+  p_fpos=0;
+
+  f_file = new fstream(file, ios_base::in | ios_base::out | ios_base::binary);
+  f_file->peek();
+
+  if (f_file->eof()) {
+    f_file->clear();
+    d_value=0;
+    d_factor=0;
+    p_left=0;
+    p_right=0;
+
+    store();
+  } else {
+    retrieve();
+  }
 }
 
 BTree::BTree(BTree * parent, int value) {
@@ -17,6 +29,19 @@ BTree::BTree(BTree * parent, int value) {
   p_parent=parent;
   p_left=0;
   p_right=0;
+
+  f_file=parent->f_file;
+  p_fpos=f_file->tellp();
+
+  store();
+}
+
+BTree::BTree(BTree * parent, streampos fpos) {
+  p_parent=parent;
+  p_fpos=fpos;
+  f_file=parent->f_file;
+
+  retrieve();
 }
 
 void BTree::updateChild(BTree * original, BTree * replacement) {
@@ -334,6 +359,64 @@ void BTree::printElements() {
       p_right->printElements();
     }
 
+  }
+}
+
+void BTree::store() {
+  char data[3*sizeof(int)+1];
+  int *value=reinterpret_cast<int *>(data);
+  char *factor=reinterpret_cast<char *>(value+1);
+  int *left=reinterpret_cast<int *>(factor+1);
+  int *right=reinterpret_cast<int *>(left+1);
+
+
+  *value=d_value;
+  *factor=d_factor;
+
+  if (p_left)
+    *left=p_left->p_fpos;
+  else
+    *left=0;
+
+  if (p_right)
+    *right=p_right->p_fpos;
+  else
+    *right=0;
+
+  f_file->seekp(p_fpos);
+  f_file->write(data, sizeof(data));
+}
+
+void BTree::retrieve() {
+  char data[3*sizeof(int)+1];
+  int *value=reinterpret_cast<int *>(data);
+  char *factor=reinterpret_cast<char *>(value+1);
+  int *left=reinterpret_cast<int *>(factor+1);
+  int *right=reinterpret_cast<int *>(left+1);
+
+  f_file->seekg(p_fpos);
+  f_file->read(data, sizeof(data));
+
+  d_value=*value;
+  d_factor=*factor;
+
+  if (*left!=0) {
+    p_left=new BTree(this, streampos(*left));
+  }
+
+  if (*right!=0) {
+    p_right=new BTree(this, streampos(*right));
+  }
+}
+
+void BTree::storeTree() {
+  store();
+
+  if (p_left!=0) {
+    p_left->storeTree();
+  }
+  if (p_right!=0) {
+    p_right->storeTree();
   }
 }
 

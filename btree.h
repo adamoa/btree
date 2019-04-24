@@ -1,7 +1,7 @@
 #ifndef BTREE_H_
 #define BTREE_H_
 
-#include <string>
+#include <fstream>
 
 using namespace std;
 
@@ -12,9 +12,12 @@ private:
   BTree * p_right;
   int d_factor;
   int d_value;
+  fstream * f_file;
+  streampos p_fpos;
 
 
   BTree(BTree * parent, int value);
+  BTree(BTree * parent, streampos fpos);
   void updateChild(BTree * original, BTree * replacement);
   void insertLeft(int value);
   void insertRight(int value);
@@ -27,14 +30,17 @@ private:
   void rotateLeft();
   void remove(BTree * node);
   void printElements();
+  void store();
+  void retrieve();
 
 public:
-  BTree();
+  BTree(const char * file);
   int getValue();
   void insert(int value);
   void remove(int value);
   BTree * lookup(int value);
   void print();
+  void storeTree();
 };
 
 #endif
