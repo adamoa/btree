@@ -1,5 +1,5 @@
-btree : main.cpp btree.cpp btree.h
-	g++ -o btree main.cpp btree.cpp
+bst : main.cpp bst.cpp bst.h
+	g++ -o bst main.cpp bst.cpp
 
-test.png : btree
-	./btree | dot -T png > test.png
+test.png : bst
+	./bst | dot -T svg -o test.png

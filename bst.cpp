@@ -1,9 +1,9 @@
-#include "btree.h"
+#include "bst.h"
 #include <iostream>
 
 using namespace std;
 
-BTree::BTree(const char * file) {
+BST::BST(const char * file) {
   p_parent=0;
   p_fpos=0;
 
@@ -23,7 +23,7 @@ BTree::BTree(const char * file) {
   }
 }
 
-BTree::BTree(BTree * parent, int value) {
+BST::BST(BST * parent, int value) {
   d_value=value;
   d_factor=0;
   p_parent=parent;
@@ -36,7 +36,7 @@ BTree::BTree(BTree * parent, int value) {
   store();
 }
 
-BTree::BTree(BTree * parent, streampos fpos) {
+BST::BST(BST * parent, streampos fpos) {
   p_parent=parent;
   p_fpos=fpos;
   f_file=parent->f_file;
@@ -44,7 +44,7 @@ BTree::BTree(BTree * parent, streampos fpos) {
   retrieve();
 }
 
-void BTree::updateChild(BTree * original, BTree * replacement) {
+void BST::updateChild(BST * original, BST * replacement) {
   if (p_right==original) {
 
     p_right=replacement;
@@ -60,9 +60,9 @@ void BTree::updateChild(BTree * original, BTree * replacement) {
   }
 }
 
-void BTree::rotateRight() {
+void BST::rotateRight() {
   if (p_parent) {
-    BTree * temporary=p_left;
+    BST * temporary=p_left;
 
     p_left=temporary->p_right;
     if (p_left)
@@ -75,9 +75,9 @@ void BTree::rotateRight() {
   }
 }
 
-void BTree::rotateLeft() {
+void BST::rotateLeft() {
   if (p_parent) {
-    BTree * temporary=this->p_right;
+    BST * temporary=this->p_right;
 
     this->p_right=temporary->p_left;
     if (p_right)
@@ -90,7 +90,7 @@ void BTree::rotateLeft() {
   }
 }
 
-int BTree::adjustRight() {
+int BST::adjustRight() {
   if (p_right->d_factor==-1) {
 
     switch (p_right->p_left->d_factor) {
@@ -133,7 +133,7 @@ int BTree::adjustRight() {
   return 0;
 }
 
-int BTree::adjustLeft() {
+int BST::adjustLeft() {
   if (p_left->d_factor==1) {
 
     switch (p_left->p_right->d_factor) {
@@ -176,7 +176,7 @@ int BTree::adjustLeft() {
   return 0;
 }
 
-void BTree::heightIncrease(BTree * child) {
+void BST::heightIncrease(BST * child) {
   if (p_parent) {
 
     if (p_right==child) {
@@ -205,7 +205,7 @@ void BTree::heightIncrease(BTree * child) {
   }
 }
 
-void BTree::heightDecrease(BTree * child) {
+void BST::heightDecrease(BST * child) {
   if (p_parent) {
 
     if (p_right==child) {
@@ -240,25 +240,25 @@ void BTree::heightDecrease(BTree * child) {
   }
 }
 
-void BTree::insertLeft(int value) {
+void BST::insertLeft(int value) {
   if (p_left==0) {
-    p_left=new BTree(this, value);
+    p_left=new BST(this, value);
     heightIncrease(p_left);
   }
 }
 
-void BTree::insertRight(int value) {
+void BST::insertRight(int value) {
   if (p_right==0) {
-    p_right=new BTree(this, value);
+    p_right=new BST(this, value);
     heightIncrease(p_right);
   }
 }
 
-void BTree::insert(int value) {
+void BST::insert(int value) {
   if (p_parent==0 && p_right==0) {
-    p_right=new BTree(this, value);
+    p_right=new BST(this, value);
   } else if (p_parent==0) {
-    BTree * parent = p_right->lookup(value);
+    BST * parent = p_right->lookup(value);
 
     if (value > parent->getValue())
       parent->insertRight(value);
@@ -268,7 +268,7 @@ void BTree::insert(int value) {
 
 }
 
-void BTree::remove(BTree * node) {
+void BST::remove(BST * node) {
   if (node->p_right==0) {
     node->p_parent->heightDecrease(node);
     node->p_parent->updateChild(node, node->p_left);
@@ -280,22 +280,22 @@ void BTree::remove(BTree * node) {
     delete node;
     return;
   } else {
-    BTree * replacement=node->p_left->lookup(node->d_value);
+    BST * replacement=node->p_left->lookup(node->d_value);
     int temp=replacement->d_value;
     remove(replacement);
     node->d_value=temp;
   }
 }
 
-void BTree::remove(int value) {
-  BTree * node = lookup(value);
+void BST::remove(int value) {
+  BST * node = lookup(value);
 
   if (node)
     if (node->d_value==value)
       remove(node);
 }
 
-BTree * BTree::drillDown(int value) {
+BST * BST::drillDown(int value) {
   if (value > d_value)
     return p_right;
   else if (value < d_value)
@@ -304,8 +304,8 @@ BTree * BTree::drillDown(int value) {
     return this;
 }
 
-BTree * BTree::lookup(int value) {
-  BTree * parent, *child;
+BST * BST::lookup(int value) {
+  BST * parent, *child;
   if (p_parent==0 && p_right!=0)
     parent=this->p_right;
   else if (p_parent!=0)
@@ -326,30 +326,43 @@ BTree * BTree::lookup(int value) {
   return parent;
 }
 
-int BTree::getValue() {
+int BST::getValue() {
   return d_value;
 }
 
-void BTree::printElements() {
+void BST::traverse() {
+  if (p_parent==0) {
+    if (p_right)
+      p_right->traverse();
+    else
+      return;
+  } else {
+    if (p_left)
+      p_left->traverse();
+    cout<<"// "<<d_value<<"\n";
+    if (p_right)
+      p_right->traverse();
+  }
+
+
+}
+
+void BST::printElements() {
   if (p_parent==0 && p_right!=0) {
     p_right->printElements();
   } else {
 
-    cout << d_value << " [ label = <<B>" << d_value << "</B><BR/>" << d_factor << ">]\n";
-    cout << d_value << " -> ";
+    cout << d_value << " [ label = <<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\" CELLPADDING=\"4\"><TR><TD PORT=\"L\"></TD><TD PORT=\"C\"><B>" << d_value << "</B><BR/>" << d_factor << "</TD><TD PORT=\"R\"></TD></TR></TABLE>>]\n";
+
     if (p_left!=0) {
-      cout<<p_left->getValue()<<"\n";
-    } else {
-      cout<<"l"<<d_value<<" [ arrowhead=none, style = dotted ]\n";
-      cout<<"l"<<d_value<<" [ style = invisible ]\n";
+      cout << d_value << ":L -> ";
+      cout<<p_left->getValue()<<":C\n";
     }
 
-    cout<<d_value<<" -> ";
+
     if (p_right!=0) {
-      cout<<p_right->getValue()<<"\n";
-    } else {
-      cout<<"r"<<d_value<<" [ arrowhead=none, style = dotted ]\n";
-      cout<<"r"<<d_value<<" [ style = invisible ]\n";
+      cout<<d_value<<":R -> ";
+      cout<<p_right->getValue()<<":C\n";
     }
 
     if (p_left!=0) {
@@ -362,7 +375,7 @@ void BTree::printElements() {
   }
 }
 
-void BTree::store() {
+void BST::store() {
   char data[3*sizeof(int)+1];
   int *value=reinterpret_cast<int *>(data);
   char *factor=reinterpret_cast<char *>(value+1);
@@ -387,7 +400,7 @@ void BTree::store() {
   f_file->write(data, sizeof(data));
 }
 
-void BTree::retrieve() {
+void BST::retrieve() {
   char data[3*sizeof(int)+1];
   int *value=reinterpret_cast<int *>(data);
   char *factor=reinterpret_cast<char *>(value+1);
@@ -401,15 +414,15 @@ void BTree::retrieve() {
   d_factor=*factor;
 
   if (*left!=0) {
-    p_left=new BTree(this, streampos(*left));
+    p_left=new BST(this, streampos(*left));
   }
 
   if (*right!=0) {
-    p_right=new BTree(this, streampos(*right));
+    p_right=new BST(this, streampos(*right));
   }
 }
 
-void BTree::storeTree() {
+void BST::storeTree() {
   store();
 
   if (p_left!=0) {
@@ -420,8 +433,8 @@ void BTree::storeTree() {
   }
 }
 
-void BTree::print() {
-  cout << "digraph {\ngraph [ ordering = out ]\nnode [ shape = circle ]\n";
+void BST::print() {
+  cout << "digraph {\ngraph [ ordering = out ]\nnode [ shape = none ]\n";
   this->printElements();
   cout << "}\n";
 }
